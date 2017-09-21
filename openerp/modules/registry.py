@@ -191,7 +191,13 @@ class Registry(Mapping):
             model._setup_base(cr, SUPERUSER_ID, partial)
 
         for model in self.models.itervalues():
-            model._setup_fields(cr, SUPERUSER_ID)
+            try:
+                model._setup_fields(cr, SUPERUSER_ID)
+            except:
+                _logger.error(
+                    "Error setting up fields for model %s" % model._name
+                )
+                raise
 
         for model in self.models.itervalues():
             model._setup_complete(cr, SUPERUSER_ID)

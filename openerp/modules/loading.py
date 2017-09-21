@@ -149,7 +149,13 @@ def load_module_graph(cr, graph, status=None, perform_checks=True, skip_modules=
             if pre_init:
                 getattr(py_module, pre_init)(cr)
 
-        models = registry.load(cr, package)
+        try:
+            models = registry.load(cr, package)
+        except:
+            _logger.error(
+                "Error loading module %s" % package
+            )
+            raise
 
         loaded_modules.append(package.name)
         if hasattr(package, 'init') or hasattr(package, 'update') or package.state in ('to install', 'to upgrade'):

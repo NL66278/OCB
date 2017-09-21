@@ -519,7 +519,7 @@ class Field(object):
             except:
                 _logger.error(
                     "Problem setting up related field %s for model %s" %
-                    (name, self.model_name)
+                    (self.name, self.model_name)
                 )
                 raise
 
