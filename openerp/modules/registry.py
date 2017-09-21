@@ -160,7 +160,21 @@ class Registry(Mapping):
         # or via explicit constructor call), and add them to the pool.
         for cls in models.MetaModel.module_to_models.get(module.name, []):
             # models register themselves in self.models
-            model = cls._build_model(self, cr)
+            try:
+                model = cls._build_model(self, cr)
+            except:
+                # determine name for model to give clear error message:
+                # (code adapted from what is done in _build_model method)
+                parents = getattr(cls, '_inherit', [])
+                parents = [parents] if isinstance(parents, basestring) \
+                    else (parents or [])
+                model_name = (
+                    cls._name or
+                    (len(parents) == 1 and parents[0]) or
+                    cls.__name__
+                )
+                _logger.error("Error building model %s" % model_name)
+                raise
             if model._name not in models_to_load:
                 # avoid double-loading models whose declaration is split
                 models_to_load.append(model._name)
