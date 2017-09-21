@@ -511,10 +511,17 @@ class Field(object):
         recs = env[self.model_name]
         fields = []
         for name in self.related:
-            field = recs._fields[name]
-            field.setup(env)
-            recs = recs[name]
-            fields.append(field)
+            try:
+                field = recs._fields[name]
+                field.setup(env)
+                recs = recs[name]
+                fields.append(field)
+            except:
+                _logger.error(
+                    "Problem setting up related field %s for model %s" %
+                    (name, self.model_name)
+                )
+                raise
 
         self.related_field = field
 
