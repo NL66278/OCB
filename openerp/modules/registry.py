@@ -209,8 +209,9 @@ class Registry(Mapping):
                 model._setup_fields(cr, SUPERUSER_ID)
             except:
                 _logger.error(
-                    "Error setting up fields for model %s" % model._name
-                )
+                    "Error setting up fields for model %s",
+                    model._name,
+                    exc_info=True)
                 raise
 
         for model in self.models.itervalues():
