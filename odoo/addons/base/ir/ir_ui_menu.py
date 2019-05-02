@@ -267,7 +267,10 @@ class IrUiMenu(models.Model):
         :return: the menu root
         :rtype: dict('children': menu_nodes)
         """
-        self._check_menu_corruption()
+        if not tools.config['test_enable']:
+            # as tests can run during initialization of the database, we
+            # can't do our check here because the menu isn't initialized yet
+            self._check_menu_corruption()
         fields = ['name', 'sequence', 'parent_id', 'action', 'web_icon', 'web_icon_data']
         menu_roots = self.get_user_roots()
         menu_roots_data = menu_roots.read(fields) if menu_roots else []
