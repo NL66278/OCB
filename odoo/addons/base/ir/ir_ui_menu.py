@@ -316,6 +316,14 @@ class IrUiMenu(models.Model):
         self.env.cr.execute(STATEMENT)
         count = self.env.cr.fetchone()[0]
         if count > 0:
+            # It might be that parent_left and parent_right still need to
+            # be computed. Try this first.
+            self._parent_store_compute()
+            self.env.cr.execute(STATEMENT)  # retry
+            count = self.env.cr.fetchone()[0]
+            if count == 0:
+                return
+            # Definitely something wrong...
             STATEMENT_EXTENDED = \
                 "SELECT mn.id, mn.parent_id, mn.name, dt.name, dt.module" \
                 " FROM ir_ui_menu mn" \
