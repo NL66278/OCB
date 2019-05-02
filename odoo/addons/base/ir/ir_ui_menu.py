@@ -337,7 +337,7 @@ class IrUiMenu(models.Model):
                     "Menu %s with id %d and parent_id %d is missing link"
                     " to parent_left and/or parent_right.\n"
                     "Menu added from %s.%s.",
-                    record[1], record[0], record[2],
+                    record[2], record[0], record[1],
                     record[4] or '?', record[3] or '?')
             raise MissingError(
                 "Menu's have been corrupted. Regenerate parent hierarchy.")
