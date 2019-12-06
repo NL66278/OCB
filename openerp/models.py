@@ -4258,14 +4258,20 @@ class BaseModel(object):
         # In some case, for example (id, create_date, write_date) we does not
         # need to read the third value of the tuple, because the real value is
         # encoded in the second value (the format).
-        cr.execute(
-            """INSERT INTO "%s" (%s) VALUES(%s) RETURNING id""" % (
-                self._table,
-                ', '.join('"%s"' % u[0] for u in updates),
-                ', '.join(u[1] for u in updates)
-            ),
-            tuple([u[2] for u in updates if len(u) > 2])
-        )
+        try:
+            cr.execute(
+                """INSERT INTO "%s" (%s) VALUES(%s) RETURNING id""" % (
+                    self._table,
+                    ', '.join('"%s"' % u[0] for u in updates),
+                    ', '.join(u[1] for u in updates)
+                ),
+                tuple([u[2] for u in updates if len(u) > 2])
+            )
+        except Exception:
+            _logger.exception(
+                "Failed to insert in %s with values: %s" %
+                (self._table, str(vals)))
+            raise
 
         id_new, = cr.fetchone()
         recs = self.browse(cr, user, id_new, context)
