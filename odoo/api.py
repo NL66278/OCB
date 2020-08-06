@@ -749,14 +749,24 @@ def _call_kw_multi(method, self, args, kwargs):
 
 def call_kw(model, name, args, kwargs):
     """ Invoke the given method ``name`` on the recordset ``model``. """
-    method = getattr(type(model), name)
-    api = getattr(method, '_api', None)
-    if api == 'model':
-        return _call_kw_model(method, model, args, kwargs)
-    elif api == 'model_create':
-        return _call_kw_model_create(method, model, args, kwargs)
-    else:
-        return _call_kw_multi(method, model, args, kwargs)
+    try:
+        method = getattr(type(model), name)
+        api = getattr(method, '_api', None)
+        if api == 'model':
+            return _call_kw_model(method, model, args, kwargs)
+        elif api == 'model_create':
+            return _call_kw_model_create(method, model, args, kwargs)
+        else:
+            return _call_kw_multi(method, model, args, kwargs)
+    except Exception:
+        _logger.error(
+            "Error in call_kw for model %s, method %s, with args %s and kwargs %s",
+            str(model),
+            str(name),
+            str(args),
+            str(kwargs)
+        )
+        raise
 
 
 class Environment(Mapping):
