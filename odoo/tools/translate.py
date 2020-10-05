@@ -1009,15 +1009,22 @@ def trans_generate(lang, modules, cr):
 
 
 def trans_load(cr, filename, lang, verbose=True, module_name=None, context=None):
+    cr.execute("SAVEPOINT TRANS_LOAD")
     try:
         with file_open(filename, mode='rb') as fileobj:
             _logger.info("loading %s", filename)
             fileformat = os.path.splitext(filename)[-1][1:].lower()
             result = trans_load_data(cr, fileobj, fileformat, lang, verbose=verbose, module_name=module_name, context=context)
             return result
+        cr.execute("RELEASE SAVEPOINT TRANS_LOAD")
     except IOError:
+        cr.execute("ROLLBACK TO SAVEPOINT TRANS_LOAD")
         if verbose:
             _logger.error("couldn't read translation file %s", filename)
+        return None
+    except Exception:
+        cr.execute("ROLLBACK TO SAVEPOINT TRANS_LOAD")
+        _logger.exception("couldn't load translation file %s", filename)
         return None
 
 
