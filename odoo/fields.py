@@ -2966,14 +2966,24 @@ class One2many(_RelationalMulti):
     def _setup_regular_full(self, model):
         super(One2many, self)._setup_regular_full(model)
         if self.inverse_name:
-            # link self to its inverse field and vice-versa
-            comodel = model.env[self.comodel_name]
-            invf = comodel._fields[self.inverse_name]
-            if isinstance(invf, (Many2one, Many2oneReference)):
-                # setting one2many fields only invalidates many2one inverses;
-                # integer inverses (res_model/res_id pairs) are not supported
-                model._field_inverses.add(self, invf)
-            comodel._field_inverses.add(invf, self)
+            try:
+                # link self to its inverse field and vice-versa
+                comodel = model.env[self.comodel_name]
+                invf = comodel._fields[self.inverse_name]
+                if isinstance(invf, (Many2one, Many2oneReference)):
+                    # setting one2many fields only invalidates many2one inverses;
+                    # integer inverses (res_model/res_id pairs) are not supported
+                    model._field_inverses.add(self, invf)
+                comodel._field_inverses.add(invf, self)
+            except Exception:
+                _logger.error(
+                    "Error setting up One2many"
+                    " from model %s to  model %s, with field %s",
+                    model._name,
+                    self.comodel_name,
+                    self.inverse_name
+                )
+                raise
 
     _description_relation_field = property(attrgetter('inverse_name'))
 
