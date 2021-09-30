@@ -161,7 +161,23 @@ def execute_cr(cr, uid, obj, method, *args, **kw):
     object = openerp.registry(cr.dbname).get(obj)
     if object is None:
         raise except_orm('Object Error', "Object %s doesn't exist" % obj)
-    return getattr(object, method)(cr, uid, *args, **kw)
+    # Special handling for search method, as it does not have the context
+    # argument as last argument, leading to unexpected results when called
+    # through xmlrpc (like by Pentaho client).
+    if method == "search":
+        argument_count = len(args)
+        domain = args[0]
+        offset = args[1] if argument_count > 1 else kw.get("offset", 0)
+        limit = args[2] if argument_count > 2 else kw.get("limit", None)
+        order = args[3] if argument_count > 3 else kw.get("order", None)
+        context = args[4] if argument_count > 4 else kw.get("context", None)
+        count = args[5] if argument_count > 5 else kw.get("count", False)
+        return getattr(object, method)(
+            cr, uid, domain, offset=offset, limit=limit, order=order,
+            context=context, count=count
+        )
+    else:
+        return getattr(object, method)(cr, uid, *args, **kw)
 
 def execute_kw(db, uid, obj, method, args, kw=None):
     return execute(db, uid, obj, method, *args, **kw or {})
