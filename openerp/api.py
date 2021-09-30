@@ -756,6 +756,8 @@ class Environment(object):
 
     def __new__(cls, cr, uid, context):
         assert context is not None
+        if not isinstance(context, dict):
+            context = {}
         args = (cr, uid, context)
 
         # if env already exists, return it
