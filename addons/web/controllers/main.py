@@ -1219,11 +1219,13 @@ class Binary(http.Controller):
                                        WHERE id = %s
                                    """, (company,))
                     else:
+                        # Take from the first company valid for user.
                         cr.execute("""SELECT c.logo_web, c.write_date
                                         FROM res_users u
                                    LEFT JOIN res_company c
                                           ON c.id = u.company_id
                                        WHERE u.id = %s
+                                       ORDER BY c.id
                                    """, (uid,))
                     row = cr.fetchone()
                     if row and row[0]:
