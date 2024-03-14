@@ -30,7 +30,19 @@ class DataSet(http.Controller):
 
     def _call_kw(self, model, method, args, kwargs):
         check_method_name(method)
-        return call_kw(request.env[model], method, args, kwargs)
+        try:
+            return call_kw(request.env[model], method, args, kwargs)
+        except Exception as exc:
+            _logger.error(
+                "Error calling method %(method)s"
+                " with args %(args)s and kwargs %(kwargs)s",
+                {
+                    "method": method,
+                    "args": str(args),
+                    "kwargs": str(kwargs),
+                },
+            )
+            raise
 
     @http.route('/web/dataset/call', type='json', auth="user")
     def call(self, model, method, args, domain_id=None, context_id=None):
