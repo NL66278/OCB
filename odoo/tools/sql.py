@@ -8,6 +8,7 @@ import json
 import re
 import psycopg2
 from psycopg2.sql import SQL, Identifier
+from psycopg2.errors import UndefinedColumn
 
 import odoo.sql_db
 from collections import defaultdict
@@ -186,8 +187,23 @@ def set_not_null(cr, tablename, columnname):
 
 def drop_not_null(cr, tablename, columnname):
     """ Drop the NOT NULL constraint on the given column. """
-    cr.execute('ALTER TABLE "{}" ALTER COLUMN "{}" DROP NOT NULL'.format(tablename, columnname))
-    _schema.debug("Table %r: column %r: dropped constraint NOT NULL", tablename, columnname)
+    query = 'ALTER TABLE "{}" ALTER COLUMN "{}" DROP NOT NULL'.format(tablename, columnname)
+    try:
+        with cr.savepoint(flush=False):
+            cr.execute(query, log_exceptions=False)
+            _schema.debug("Table %r: column %r: dropped constraint NOT NULL", tablename, columnname)
+    except UndefinedColumn as exc:
+        _schema.debug(
+            "Table %r: column %r: did not exist when trying to drop NOT NULL",
+            tablename,
+            columnname
+        )
+    except Exception:
+        _schema.debug(
+                "Table %r: column %r: unexpected exception when trying to drop NOT NULL",
+            tablename,
+            columnname
+        )
 
 def constraint_definition(cr, tablename, constraintname):
     """ Return the given constraint's definition. """
