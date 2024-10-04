@@ -1876,7 +1876,20 @@ class JsonRPCDispatcher(Dispatcher):
         self.request.params = dict(self.jsonrequest.get('params', {}), **args)
         ctx = self.request.params.pop('context', None)
         if ctx is not None and self.request.db:
-            self.request.update_context(**ctx)
+            try:
+                self.request.update_context(**ctx)
+            except Exception:
+                _logger.exception(
+                    "Cannot update context with ctx=%(ctx)s, params=%(params)s"
+                    ", endpoint=%(endpoint)s, args=%(args)s,",
+                    {
+                        "ctx": str(ctx),
+                        "params": str(self.request.params),
+                        "endpoint": str(endpoint),
+                        "args": str(args),
+                    }
+                )
+                pass
 
         if self.request.db:
             result = self.request.registry['ir.http']._dispatch(endpoint)
